@@ -1,57 +1,126 @@
-# E-Commerce API Testing Practice
+# E-Commerce API Testing Project
 
-Spring Boot REST API created for a 45-day Postman + Java API testing course.
+Java 21 + Spring Boot + MySQL REST API designed for Postman and REST Assured practice.
 
-## Run
+## Stack
+
+- Java 21
+- Spring Boot 3.5.5
+- Spring Web
+- Spring Validation
+- Spring Data JPA / Hibernate
+- MySQL 8.4
+- Maven
+- Docker Compose
+
+## 1. Start MySQL with Docker
 
 Requirements:
-- Java 17+
-- Maven 3.9+
+- JDK 21
+- Maven
+- Docker Desktop
+
+Run:
+
+```bash
+docker compose up -d
+```
+
+This creates:
+
+- Database: `ecommerce_api`
+- User: `ecommerce_user`
+- Password: `change-me`
+- Port: `3306`
+
+For a real environment, change these credentials.
+
+## 2. Run Spring Boot
 
 ```bash
 mvn spring-boot:run
 ```
 
-Base URL:
-`http://localhost:8080`
+API:
 
-H2 console:
-`http://localhost:8080/h2-console`
+```text
+http://localhost:8080
+```
 
-JDBC URL:
-`jdbc:h2:mem:ecommerce`
+## 3. Test in Postman
 
-## Current endpoints
+### Login
 
-### Authentication
-- POST `/api/auth/login`
-- POST `/api/auth/logout`
-- POST `/api/auth/refresh`
+```http
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
 
-### Users
-- GET `/api/users`
-- GET `/api/users/{id}`
-- POST `/api/users`
-- PUT `/api/users/{id}`
-- DELETE `/api/users/{id}`
+{
+  "email": "test@example.com",
+  "password": "Password@123"
+}
+```
 
 ### Products
-- GET `/api/products`
-- GET `/api/products/{id}`
-- POST `/api/products`
-- PUT `/api/products/{id}`
-- PATCH `/api/products/{id}`
-- DELETE `/api/products/{id}`
 
-Seed login:
-- test@example.com / Password@123
-- admin@example.com / Admin@123
+```http
+GET    http://localhost:8080/api/products
+GET    http://localhost:8080/api/products/1
+POST   http://localhost:8080/api/products
+PUT    http://localhost:8080/api/products/1
+PATCH  http://localhost:8080/api/products/1
+DELETE http://localhost:8080/api/products/1
+```
 
-Seed products:
-1 Wireless Mouse
-2 Mechanical Keyboard
-3 USB-C Cable
+### Users
 
-## Important
+```http
+GET    http://localhost:8080/api/users
+GET    http://localhost:8080/api/users/1
+POST   http://localhost:8080/api/users
+PUT    http://localhost:8080/api/users/1
+DELETE http://localhost:8080/api/users/1
+```
 
-This is intentionally a training API, not a production payment/authentication system. More modules (categories, cart, orders, payments) will be added during the course.
+## Test users
+
+```text
+test@example.com / Password@123
+admin@example.com / Admin@123
+```
+
+These are practice credentials only. Do not use them in production.
+
+## Database
+
+The database is persistent through the Docker volume:
+
+```text
+ecommerce_mysql_data
+```
+
+Spring Boot uses environment variables:
+
+```text
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+```
+
+Never commit real production credentials to GitHub.
+
+## Deployment
+
+For Railway or another host, set:
+
+```text
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+```
+
+and make sure the deployment environment has access to the MySQL server.
+
+## Deliberate learning target
+
+The project currently contains Authentication, Users, and Products. Categories, Cart, Orders, and Payments should be implemented progressively during the API-testing training so each new module becomes a testing exercise.

@@ -13,27 +13,45 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final UserRepository repo;
-    public AuthController(UserRepository repo) { this.repo = repo; }
+    private final UserRepository userRepository;
 
-    record LoginRequest(@Email @NotBlank String email, @NotBlank String password) {}
-
-    @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody LoginRequest req) {
-        User u = repo.findByEmail(req.email()).orElseThrow(() -> new RuntimeException("Invalid credentials"));
-        if (!u.getPassword().equals(req.password())) throw new RuntimeException("Invalid credentials");
-        return Map.of("accessToken", "access-" + UUID.randomUUID(), "refreshToken", "refresh-" + UUID.randomUUID(),
-                "tokenType", "Bearer", "userId", u.getId());
+    public AuthController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    @PostMapping("/refresh")
-    public Map<String, Object> refresh(@RequestBody Map<String, String> body) {
-        String token = body.get("refreshToken");
-        if (token == null || !token.startsWith("refresh-")) throw new RuntimeException("Invalid refresh token");
-        return Map.of("accessToken", "access-" + UUID.randomUUID(), "tokenType", "Bearer");
+    public record LoginRequest(@Email @NotBlank String email, @NotBlank String password) {}
+    public record RefreshRequest(@NotBlank String refreshToken) {}
+
+    @PostMapping("/login")
+    public Map<String, Object> login(@RequestBody LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!user.getPassword().equals(request.password())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        return Map.of(
+                "message", "Login successful",
+                "userId", user.getId(),
+                "accessToken", "access-" + UUID.randomUUID(),
+                "refreshToken", "refresh-" + UUID.randomUUID()
+        );
     }
 
     @PostMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout() {}
+    public Map<String, String> logout() {
+        return Map.of("message", "Logout successful");
+    }
+
+    @PostMapping("/refresh")
+    public Map<String, String> refresh(@RequestBody RefreshRequest request) {
+        if (!request.refreshToken().startsWith("refresh-")) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+        return Map.of(
+                "accessToken", "access-" + UUID.randomUUID(),
+                "message", "Token refreshed"
+        );
+    }
 }
